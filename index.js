@@ -55,37 +55,37 @@ twitterClient.get('search/tweets',{q:"doge"},(err,tweets,response) => {
     console.log("initial tweets")
     for(let t of tweets.statuses) {
         console.log(t.text)
-        if( !!t.text.length&& ! rg.test(t.text) )
-        {
-            m.train(2,t.text.split(/\W+/));
-        }
+        train(t.text)
     }
 })
+function train(text) {
+    if( !!text.length&& ! rg.test(text) )
+    {
+        m.train(2,text.split(/\W+/));
+    }
+}
 
 const stream = twitterClient.stream('statuses/filter',{track:'doge'});
 
 const lim = 10;
 let i = 0;
 
-stream.on('data',(event) => {
-    if( !!event.text.length&& ! rg.test(event.text) )
-    {
-        m.train(2,event.text.split(/\W+/));
-    }
-    if(i++ % lim === 0 ) {
-        const newTweet = `${m.generateRandomPhrase(20)}
+stream.on('data',(event) => train(event.text))
+
+setInterval(() => {
+
+    const newTweet = `${m.generateRandomPhrase(20)}
 #dogecoin
 `
-        console.log("TWEET",newTweet)
-        twitterClient.post("statuses/update",{
-            status:newTweet
-        },(error,tweet,response) => {
-            if(error) {
-                console.error(error);
-            }
-        })
-    }
-})
+    console.log("TWEET",newTweet)
+    twitterClient.post("statuses/update",{
+        status:newTweet
+    },(error,tweet,response) => {
+        if(error) {
+            console.error(error);
+        }
+    })
+},90000);// send a tweet every 90 seconds to avoid being rate limited
 
 // client.on('ready', async() => {
 //     console.log(`Logged in as ${client.user.tag}!`);
