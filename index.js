@@ -1,18 +1,21 @@
 //imports
 require('dotenv').config()
-const fs = require("fs").promises
+// const fs = require("fs").promises
 var {create} = require("@kit-js/core/js/util");
 const Twitter = require("twitter")
-const Discord = require('discord.js');
+// const Discord = require('discord.js');
 const ai = require('@kettlelogic/language-model');
 const { readFile } = require('fs');
 
-const twitterClient = new Twitter({
+
+const twitterConfig = {
     consumer_key:process.env.TWITTER_CONSUMER_KEY,
     consumer_secret:process.env.TWITTER_CONSUMER_SECRET,
     access_token_key:process.env.TWITTER_ACCESS_TOKEN_KEY,
     access_token_secret:process.env.TWITTER_ACCESS_TOKEN_SECRET,
-})
+}
+console.log(twitterConfig)
+const twitterClient = new Twitter(twitterConfig)
 //duck needs to "say"
 
 //procedeures
@@ -26,14 +29,37 @@ function respond(stuff){}
 
 //variables
 
-const client = new Discord.Client();
+// const client = new Discord.Client();
 var m = create(ai.Model)();
 
 //event handlers
 /// casheing msg, 
+const ignore = [
+    "fuck",
+    "bitch",
+    "shit",
+    "sell",
+    "coinbase",
+    "upvote",
+    "Daily Discussion",
+    "[0-9: ]+pm",
+    "[0-9: ]+am"
+];
 
-client.get('search/tweets',{q:"doge"},(err,tweets,response) => {
+let rg = new RegExp( ignore.join('|'), 'i' );
+
+twitterClient.get('search/tweets',{q:"doge"},(err,tweets,response) => {
     if(err) return console.error(err);
+
+
+    console.log("initial tweets")
+    for(let t of tweets.statuses) {
+        console.log(t.text)
+        if( !!t.text.length&& ! rg.test(t.text) )
+        {
+            m.train(2,t.text.split(/\W+/));
+        }
+    }
 })
 
 const stream = twitterClient.stream('statuses/filter',{track:'doge'});
@@ -42,13 +68,17 @@ const lim = 10;
 let i = 0;
 
 stream.on('data',(event) => {
-    if(err) return console.error(err);
-
-    m.train(2,event.text.split(/\W+/));
-
+    if( !!event.text.length&& ! rg.test(event.text) )
+    {
+        m.train(2,event.text.split(/\W+/));
+    }
     if(i++ % lim === 0 ) {
-        client.post("statuses/update",{
-            status:m.generateRandomPhrase(20)
+        const newTweet = `${m.generateRandomPhrase(20)}
+#dogecoin
+`
+        console.log("TWEET",newTweet)
+        twitterClient.post("statuses/update",{
+            status:newTweet
         },(error,tweet,response) => {
             if(error) {
                 console.error(error);
