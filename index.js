@@ -1,23 +1,12 @@
-//imports
 require('dotenv').config();
-// const fs = require('fs').promises
+
 var {create} = require('@kit-js/core/js/util');
 const Twitter = require('twitter');
-// const Discord = require('discord.js');
 const ai = require('@kettlelogic/language-model');
-//const { readFile } = require('fs');
 
-//FileName: social_signin.js
 var express = require('express');
-
-
-//NPM Module to integrate Handlerbars UI template engine with Express
 var exphbs  = require('express-handlebars');
-
-//NPM Module to make HTTP Requests
 var request = require("request");
-
-//NPM Module To parse the Query String and to build a Query String
 var qs = require("querystring");
 
 var app = express();
@@ -27,19 +16,16 @@ var app = express();
 app.engine('handlebars', exphbs({defaultLayout: 'main'}));
 app.set('view engine', 'handlebars');
 
-//URL To obtain Request Token from Twitter
 var requestTokenUrl = "https://api.twitter.com/oauth/request_token";
 
-//To be obtained from the app created on Twitter
 var CONSUMER_KEY = process.env.TWITTER_CONSUMER_KEY;
 var CONSUMER_SECRET = process.env.TWITTER_CONSUMER_SECRET;
 
-//Oauth Object to be used to obtain Request token from Twitter
 var oauth = {
     callback : "http://localhost:3000/signin-with-twitter",
     consumer_key  : CONSUMER_KEY,
     consumer_secret : CONSUMER_SECRET
-}
+};
 var oauthToken = "";
 var oauthTokenSecret = "";
 app.get('/', function (req, res) {
@@ -48,6 +34,7 @@ app.get('/', function (req, res) {
 
         //Parsing the Query String containing the oauth_token and oauth_secret.
         var reqData = qs.parse(body);
+        console.log({reqData})
         oauthToken = reqData.oauth_token;
         oauthTokenSecret = reqData.oauth_token_secret;
 
@@ -80,11 +67,13 @@ app.get("/signin-with-twitter", function(req, res){
         var authenticationData = {
             consumer_key : CONSUMER_KEY,
             consumer_secret : CONSUMER_SECRET,
-            token: authenticatedData.oauth_token,
-            token_secret : authenticatedData.oauth_token_secret
+            access_token_key: authenticatedData.oauth_token,
+            access_token_secret : authenticatedData.oauth_token_secret
         };
 
-        const twitterClient = new Twitter(authenticationDat);
+        console.log({authenticationData})
+
+        const twitterClient = new Twitter(authenticationData);
         var m = create(ai.Model)();
 
         //event handlers
@@ -122,7 +111,8 @@ app.get("/signin-with-twitter", function(req, res){
 
         const stream = twitterClient.stream('statuses/filter',{track:'doge'});
 
-        stream.on('data',(event) => train(event.text));
+        stream.on('data',(event) => train(event.text))
+            .on('error',error => console.error(error));
 
         setInterval(() => {
 
