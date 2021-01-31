@@ -1,20 +1,23 @@
 {
 	"name": "doge-bot",
-  "version": "1.0.0",
-  "description": "quack",
-  "main": "index.js",
+	"version": "1.0.0",
+	"description": "quack",
+	"main": "index.js",
 	"repository": {
-    "type": "git",
-    "url": "git+https://github.com/marcinaj/doge-bot.git"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "dotenv": "^8.2.0",
-    "snoowrap": "^1.22.0",
-    "twitter": "^1.7.1"
-  }
+		"type": "git",
+		"url": "git+https://github.com/marcinaj/doge-bot.git"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"dotenv": "^8.2.0",
+		"snoowrap": "^1.22.0",
+		"twitter": "^1.7.1"
+	},
+	"devDependencies": {
+		"eslint": "^7.18.0"
+	}
 }
