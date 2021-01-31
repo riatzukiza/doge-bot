@@ -1,5 +1,5 @@
 import twitter from "./twitter.client.mjs";
-import ignore from "./config.ignore.mjs";
+import ignore  from "./config.ignore.mjs";
 
 let _cache  = [];
 let _stream = null;
@@ -19,11 +19,12 @@ function init()
     if( err ) 
 			return console.error( err );
     for( let tweet of tweets.statuses ) 
-			_cache.push( tweet.text );
+			if( !_rx_ignore.test( tweet.text ) )
+				_cache.push( tweet.text );
 	} );
 	
 	_stream = twitter.client.stream( 'statuses/filter', { track: 'doge' } );
-	_stream.on( 'data', event => _cache.push( event.text ) );
+	_stream.on( 'data', event => { if( !_rx_ignore.test( tweet.text ) ) _cache.push( event.text ); } );
 	
 	return true;
 }
